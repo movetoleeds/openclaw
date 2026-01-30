@@ -32,6 +32,17 @@ const assistantIds = {
   'stephanie': process.env.ASSISTANT_ID_STEPHANIE
 };
 
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+// Initialize Twilio client
+const twilioClient = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
+
 app.use(express.json());
 
 // Webhook for receiving WhatsApp messages
@@ -77,10 +88,69 @@ app.post('/webhook/whatsapp', async (req, res) => {
 async function handleMessage(from, agent, text) {
   try {
     console.log(`Processing message for ${agent.name}...`);
-    // TODO: Integrate with actual AI agent system
-    // This is where you'd call your agent's API
+    
+    // Get the Assistant ID for this agent
+    const assistantId = assistantIds[agent.id];
+    
+    if (!assistantId) {
+      throw new Error(`No Assistant ID found for agent ${agent.id}`);
+    }
+    
+    console.log(`Using Assistant ID: ${assistantId}`);
+    
+    // Create a thread
+    const thread = await openai.beta.threads.create();
+    
+    // Add message to thread
+    await openai.beta.threads.messages.create(thread.id, {
+      role: "user",
+      content: text
+    });
+    
+    // Run the assistant
+    const run = await openai.beta.threads.runs.create(thread.id, {
+      assistant_id: assistantId
+    });
+    
+    // Wait for completion
+    let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+    while (runStatus.status !== 'completed') {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+      
+      if (runStatus.status === 'failed' || runStatus.status === 'cancelled') {
+        throw new Error(`Run ${runStatus.status}`);
+      }
+    }
+    
+    // Get the assistant's response
+    const messages = await openai.beta.threads.messages.list(thread.id);
+    const assistantMessage = messages.data[0].content[0].text.value;
+    
+    console.log(`AI Response: ${assistantMessage}`);
+    
+    // Send response via Twilio
+    await twilioClient.messages.create({
+      body: assistantMessage,
+      from: 'whatsapp:+14155238886',
+      to: from
+    });
+    
+    console.log(`Response sent to ${from}`);
+    
   } catch (error) {
     console.error(`Error handling message for ${agent.id}:`, error);
+    
+    // Send error message to user
+    try {
+      await twilioClient.messages.create({
+        body: 'Sorry, I encountered an error processing your message. Please try again.',
+        from: 'whatsapp:+14155238886',
+        to: from
+      });
+    } catch (sendError) {
+      console.error('Error sending error message:', sendError);
+    }
   }
 }
 
