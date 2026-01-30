@@ -44,39 +44,38 @@ const twilioClient = twilio(
 );
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Webhook for receiving WhatsApp messages
 app.post('/webhook/whatsapp', async (req, res) => {
-  try {
-    const { messages } = req.body;
+      // Twilio sends data as form-encoded with From and Body fields
+    const fromNumber = req.body.From?.replace('whatsapp:', '') || req.body.from;
+    const messageText = req.body.Body || req.body.body;
     
-    if (!messages || messages.length === 0) {
+    console.log(`[${new Date().toISOString()}] Received message from ${fromNumber}: ${messageText}`);
+    
+    if (!fromNumber || !messageText) {
+      console.log('Missing From or Body in request');
       return res.status(200).json({ success: true });
-    }
+    }  
     
-    for (const message of messages) {
-      const fromNumber = message.from;
-      const messageText = message.body;
-      
-      // Find the agent for this phone number
-      const agent = familyAgents[fromNumber];
-      
-      if (agent) {
-        console.log(`[${new Date().toISOString()}] Message from ${agent.name} (${fromNumber}): ${messageText}`);
-        console.log(`Routing to agent: ${agent.id}`);
-                
-        // Get the Assistant ID for this agent
-        const assistantId = assistantIds[agent.id];
-        console.log(`Using Assistant ID: ${assistantId} for agent ${agent.name}`);
-        
-        // Here you would normally call the actual AI agent
-        // For now, we just log the routing
-        await handleMessage(fromNumber, agent, messageText);
-      } else {
-        console.log(`Unknown sender: ${fromNumber}`);
-      }
-    }
+        // Find the agent for this phone number
+    const agent = familyAgents[fromNumber];
     
+    if (agent) {
+      console.log(`Message from ${agent.name} (${fromNumber})`);
+      console.log(`Routing to agent: ${agent.id}`);
+      
+      // Get the Assistant ID for this agent
+      const assistantId = assistantIds[agent.id];
+      console.log(`Using Assistant ID: ${assistantId} for agent ${agent.name}`);
+      
+      // Process the message
+      await handleMessage(fromNumber, agent, messageText);
+    } else {
+      console.log(`Unknown sender: ${fromNumber}`);
+    }  
+  }    
     res.status(200).json({ success: true });
   } catch (error) {
     console.error('Error processing webhook:', error);
@@ -133,8 +132,7 @@ async function handleMessage(from, agent, text) {
     await twilioClient.messages.create({
       body: assistantMessage,
       from: 'whatsapp:+14155238886',
-      to: from
-    });
+      to: `whatsapp:${from}`    });
     
     console.log(`Response sent to ${from}`);
     
@@ -146,8 +144,7 @@ async function handleMessage(from, agent, text) {
       await twilioClient.messages.create({
         body: 'Sorry, I encountered an error processing your message. Please try again.',
         from: 'whatsapp:+14155238886',
-        to: from
-      });
+        to: `whatsapp:${from}`      });
     } catch (sendError) {
       console.error('Error sending error message:', sendError);
     }
