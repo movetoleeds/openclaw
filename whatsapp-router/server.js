@@ -48,10 +48,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // Webhook for receiving WhatsApp messages
 app.post('/webhook/whatsapp', async (req, res) => {
+  try {
       // Twilio sends data as form-encoded with From and Body fields
     const fromNumber = req.body.From?.replace('whatsapp:', '') || req.body.from;
     const messageText = req.body.Body || req.body.body;
-    
+
     console.log(`[${new Date().toISOString()}] Received message from ${fromNumber}: ${messageText}`);
     
     if (!fromNumber || !messageText) {
