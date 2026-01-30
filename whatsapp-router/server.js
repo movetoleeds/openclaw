@@ -22,14 +22,14 @@ const botNumber = '+85296256886'; // Your WhatsApp bot number
 
 // Assistant IDs for each family member
 const assistantIds = {
-  'himson': process.env.ASSISTANT_ID_HIMSON,
-  'himchu': process.env.ASSISTANT_ID_HIMCHU,
-  'kennis': process.env.ASSISTANT_ID_KENNIS,
-  'cellesse': process.env.ASSISTANT_ID_CELLESSE,
-  'murff': process.env.ASSISTANT_ID_MURFF,
-  'chung': process.env.ASSISTANT_ID_CHUNG,
-  'dingding': process.env.ASSISTANT_ID_DINGDING,
-  'stephanie': process.env.ASSISTANT_ID_STEPHANIE
+  'himson': 'asst_snrPD0scDPMs8aSyG6mcjXvr',
+  'himchu': 'asst_4yHZ859ivg8HFw9Mgt7mMUZP',
+  'kennis': 'asst_bPW4tKrtXY2BqgtY9e47il2A',
+  'cellesse': 'asst_dW7XRS4J1P5n3pQok4HzkD05',
+  'murff': 'asst_Ss2iA5BVLNglOikglCcU1Xft',
+  'chung': 'asst_vv77Yokpf4m8EM42DOX7juzZ',
+  'dingding': 'asst_tIwbstc4qGZjSvYnzDGhcY8Q',
+  'stephanie': 'asst_DzDk7I6diKfrK9G1mLyPxmDQ'
 };
 
 // Initialize OpenAI client
