@@ -18,6 +18,18 @@ const familyAgents = {
 
 const botNumber = '+85296256886'; // Your WhatsApp bot number
 
+// Assistant IDs for each family member
+const assistantIds = {
+  'himson': process.env.ASSISTANT_ID_HIMSON,
+  'himchu': process.env.ASSISTANT_ID_HIMCHU,
+  'kennis': process.env.ASSISTANT_ID_KENNIS,
+  'cellesse': process.env.ASSISTANT_ID_CELLESSE,
+  'murff': process.env.ASSISTANT_ID_MURFF,
+  'chung': process.env.ASSISTANT_ID_CHUNG,
+  'dingding': process.env.ASSISTANT_ID_DINGDING,
+  'stephanie': process.env.ASSISTANT_ID_STEPHANIE
+};
+
 app.use(express.json());
 
 // Webhook for receiving WhatsApp messages
@@ -39,6 +51,10 @@ app.post('/webhook/whatsapp', async (req, res) => {
       if (agent) {
         console.log(`[${new Date().toISOString()}] Message from ${agent.name} (${fromNumber}): ${messageText}`);
         console.log(`Routing to agent: ${agent.id}`);
+                
+        // Get the Assistant ID for this agent
+        const assistantId = assistantIds[agent.id];
+        console.log(`Using Assistant ID: ${assistantId} for agent ${agent.name}`);
         
         // Here you would normally call the actual AI agent
         // For now, we just log the routing
