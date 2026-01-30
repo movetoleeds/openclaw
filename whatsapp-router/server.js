@@ -75,7 +75,7 @@ app.post('/webhook/whatsapp', async (req, res) => {
       await handleMessage(fromNumber, agent, messageText);
     } else {
       console.log(`Unknown sender: ${fromNumber}`);
-    }  
+          }
   }    
     res.status(200).json({ success: true });
   } catch (error) {
