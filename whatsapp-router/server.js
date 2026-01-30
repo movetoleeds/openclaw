@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
+const OpenAI = require('openai');
+const twilio = require('twilio');
 
 const PORT = process.env.PORT || 3000;
 
