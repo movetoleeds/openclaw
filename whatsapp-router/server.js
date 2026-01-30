@@ -81,6 +81,18 @@ app.get('/agents', (req, res) => {
   res.status(200).json({ agents, botNumber });
 });
 
+
+// Root endpoint
+app.get('/', (req, res) => {
+ res.status(200).json({ 
+   status: 'OK', 
+   message: 'WhatsApp Family Router is running', 
+   botNumber,
+   agents: Object.keys(familyAgents).length,
+   version: '1.0.0'
+ });
+});
+
 app.listen(PORT, () => {
   console.log(`WhatsApp Family Router listening on port ${PORT}`);
   console.log(`Bot Number: ${botNumber}`);
